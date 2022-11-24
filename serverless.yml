@@ -1,0 +1,75 @@
+service: serverless-aws
+
+plugins:
+  - serverless-offline
+  - serverless-esbuild
+
+provider:
+  name: aws
+  runtime: nodejs16.x
+  stage: dev
+  region: us-east-1
+  httpApi:
+    authorizers:
+      customAuthorizer:
+        type: request
+        functionName: authorizerFunc
+
+functions:
+  authorizerFunc:
+    handler: src/lambdas/authentication.checkAuthentication
+  login:
+    handler: src/lambdas/authentication.login
+    events:
+      - httpApi:
+          method: POST
+          path: /authentication/login
+  createUser:
+    handler: src/lambdas/user.create
+    events:
+      - httpApi:
+          method: POST
+          path: /user
+          authorizer:
+            name: authorizerFunc
+  createRoom:
+    handler: src/lambdas/room.create
+    events:
+      - httpApi:
+          method: POST
+          path: /room
+          # authorizer:
+          #   name: customAuthorizer
+  listRoom:
+    handler: src/lambdas/room.list
+    events:
+      - httpApi:
+          method: GET
+          path: /room
+          # authorizer:
+          #   name: customAuthorizer
+  updateRoom:
+    handler: src/lambdas/room.update
+    events:
+      - httpApi:
+          method: PUT
+          path: /room/{id}
+          # authorizer:
+          #   name: customAuthorizer
+  updateAvailabilityRoom:
+    handler: src/lambdas/room.updateAvailability
+    events:
+      - httpApi:
+          method: PATCH
+          path: /room/{id}/availability
+          # authorizer:
+          #   name: customAuthorizer
+  createReservation:
+    handler: src/lambdas/reservation.create
+    events:
+      - httpApi:
+          method: POST
+          path: /reservation
+          # authorizer:
+          #   name: customAuthorizer
+
