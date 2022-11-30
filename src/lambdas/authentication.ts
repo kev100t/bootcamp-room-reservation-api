@@ -1,14 +1,17 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
+import { login as loginAuhtentication } from "../authentication/services";
 
 export const login = async (
 	event: APIGatewayProxyEvent
 ): Promise<APIGatewayProxyResult> => {
 	try {
+		const { email, password } = JSON.parse(event.body);
+
+		const data = await loginAuhtentication(email, password);
+
 		return {
 			statusCode: 200,
-			body: JSON.stringify({
-				message: "User logged in",
-			}),
+			body: JSON.stringify(data),
 		};
 	} catch (err) {
 		console.log(err);
@@ -22,37 +25,17 @@ export const login = async (
 };
 
 export const checkAuthentication = async (event) => {
-	const methodArn = event.methodArn;
-
-	try {
-		return generateAuthResponse("user", "Allow", methodArn);
-	} catch (err) {
-		return generateAuthResponse("user", "Deny", methodArn);
-	}
-};
-
-function generateAuthResponse(principalId, effect, methodArn) {
-	const policyDocument = generatePolicyDocument(effect, methodArn);
-
 	return {
-		principalId,
-		policyDocument,
+		principalId: "anonymous",
+		policyDocument: {
+			Version: "2012-10-17",
+			Statement: [
+				{
+					Action: "execute-api:Invoke",
+					Effect: "Allow",
+					Resource: event.routeArn,
+				},
+			],
+		},
 	};
-}
-
-function generatePolicyDocument(effect, methodArn) {
-	if (!effect || !methodArn) return null;
-
-	const policyDocument = {
-		Version: "2012-10-17",
-		Statement: [
-			{
-				Action: "execute-api:Invoke",
-				Effect: effect,
-				Resource: methodArn,
-			},
-		],
-	};
-
-	return policyDocument;
-}
+};
