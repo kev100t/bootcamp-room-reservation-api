@@ -71,7 +71,7 @@ export const update = async (id: string, obj: any) => {
 	}
 };
 
-export const updateAvailability = async (id: string, body: boolean) => {
+export const updateAvailability = async (id: string, disponibility1: boolean)=> {
 	try {
 		const AWS = require("aws-sdk");
 
@@ -90,7 +90,7 @@ export const updateAvailability = async (id: string, body: boolean) => {
 			},
 			ExpressionAttributeValues: {
 				
-				":_disponibility": body.disponibility
+				":_disponibility": disponibility1.disponibility
 				
 			},
 			ReturnValues: "UPDATED_NEW",
