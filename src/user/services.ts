@@ -1,6 +1,6 @@
 import { create as createRepository } from "./repository";
-import { UserEntity } from "./entities/user";
-import { RoleEnum } from "./enum/role";
+import { UserEntity } from "../common/entities/user";
+import { RoleEnum } from "../common/enums/role";
 import { ulid } from "ulid";
 import * as bcrypt from "bcryptjs";
 

@@ -1,9 +1,9 @@
-import { DynamoDB } from "@aws-sdk/client-dynamodb";
+import { DynamoDB, ItemResponse } from "@aws-sdk/client-dynamodb";
 
 const dynamodb = new DynamoDB({});
 
 export const searchUser = async (email: string) => {
-	const users = [];
+	const users: ItemResponse[] = [];
 
 	const params = {
 		TableName: process.env.USER_TABLE,

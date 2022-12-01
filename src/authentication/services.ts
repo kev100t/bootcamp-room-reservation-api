@@ -1,23 +1,24 @@
-import { searchUser as searchUserRepository } from "./repository";
-import * as jwt from "jsonwebtoken";
+import * as jsonwebtoken from "jsonwebtoken";
 import * as bcrypt from "bcryptjs";
+import { searchUser as searchUserRepository } from "./repository";
+import { set as setError } from "../common/error/error";
 
 export const login = async (email: string, password: string) => {
 	const users = await searchUserRepository(email);
 
 	if (users.length == 0) {
-		throw new Error("No autorizado");
+		throw setError(401, "Email doesn't exist");
 	}
 
-	const { password: userPassword, ...rest } = users[0];
+	const user = users[0];
 
-	const samePassword = bcrypt.compareSync(password, userPassword);
+	const samePassword = bcrypt.compareSync(password, user.password);
 
 	if (!samePassword) {
-		throw new Error("No autorizado");
+		throw setError(401, "Incorrect password");
 	}
 
 	return {
-		token: jwt.sign(rest, process.env.PRIVATE_KEY),
+		token: jsonwebtoken.sign({ userId: user.id }, process.env.PRIVATE_KEY),
 	};
 };

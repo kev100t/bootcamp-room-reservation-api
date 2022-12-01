@@ -1,5 +1,9 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 import { create as createUser } from "../user/services";
+import {
+	set as setResponse,
+	setError as setErrorResponse,
+} from "../common/response/response";
 
 export const create = async (
 	event: APIGatewayProxyEvent
@@ -9,19 +13,8 @@ export const create = async (
 
 		const data = await createUser(names, email, password);
 
-		return {
-			statusCode: 200,
-			body: JSON.stringify({
-				data,
-			}),
-		};
-	} catch (err) {
-		console.log(err);
-		return {
-			statusCode: 500,
-			body: JSON.stringify({
-				message: "some error happened",
-			}),
-		};
+		return await setResponse(200, data);
+	} catch (error) {
+		return await setErrorResponse(error);
 	}
 };

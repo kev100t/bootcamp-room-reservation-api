@@ -1,5 +1,5 @@
 import { DynamoDB } from "@aws-sdk/client-dynamodb";
-import { UserEntity } from "./entities/user";
+import { UserEntity } from "../common/entities/user";
 
 const dynamodb = new DynamoDB({});
 
