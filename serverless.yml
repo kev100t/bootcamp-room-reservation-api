@@ -8,47 +8,47 @@ provider:
   name: aws
   runtime: nodejs16.x
   stage: dev
-  region: us-east-1
-  httpApi:
-    authorizers:
-      customAuthorizer:
-        type: request
-        functionName: authorizerFunc
+  region: us-east-2
+   httpApi:
+     authorizers:
+       customAuthorizer:
+         type: request
+         functionName: authorizerFunc
 
 functions:
-  authorizerFunc:
-    handler: src/lambdas/authentication.checkAuthentication
-  login:
-    handler: src/lambdas/authentication.login
-    events:
-      - httpApi:
-          method: POST
-          path: /authentication/login
-  createUser:
-    handler: src/lambdas/user.create
-    events:
-      - httpApi:
-          method: POST
-          path: /user
-          authorizer:
-            name: authorizerFunc
-  createRoom:
-    handler: src/lambdas/room.create
-    events:
-      - httpApi:
-          method: POST
-          path: /room
-          # authorizer:
-          #   name: customAuthorizer
-  listRoom:
-    handler: src/lambdas/room.list
-    events:
-      - httpApi:
-          method: GET
-          path: /room
-          # authorizer:
-          #   name: customAuthorizer
-  updateRoom:
+   authorizerFunc:
+     handler: src/lambdas/authentication.checkAuthentication
+   login:
+     handler: src/lambdas/authentication.login
+     events:
+       - httpApi:
+           method: POST
+           path: /authentication/login
+   createUser:
+     handler: src/lambdas/user.create
+     events:
+       - httpApi:
+           method: POST
+           path: /user
+           authorizer:
+             name: authorizerFunc
+   createRoom:
+     handler: src/lambdas/room.create
+     events:
+       - httpApi:
+           method: POST
+           path: /room
+           # authorizer:
+           #   name: customAuthorizer
+   listRoom:
+     handler: src/lambdas/room.list
+     events:
+       - httpApi:
+           method: GET
+           path: /room
+           # authorizer:
+           #   name: customAuthorizer
+  updateRoomV2:
     handler: src/lambdas/room.update
     events:
       - httpApi:
@@ -56,7 +56,7 @@ functions:
           path: /room/{id}
           # authorizer:
           #   name: customAuthorizer
-  updateAvailabilityRoom:
+  updateAvailabilityRoomV2:
     handler: src/lambdas/room.updateAvailability
     events:
       - httpApi:
@@ -64,12 +64,12 @@ functions:
           path: /room/{id}/availability
           # authorizer:
           #   name: customAuthorizer
-  createReservation:
-    handler: src/lambdas/reservation.create
-    events:
-      - httpApi:
-          method: POST
-          path: /reservation
-          # authorizer:
-          #   name: customAuthorizer
+   createReservation:
+     handler: src/lambdas/reservation.create
+     events:
+       - httpApi:
+           method: POST
+           path: /reservation
+           # authorizer:
+           #   name: customAuthorizer
 
