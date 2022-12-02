@@ -1,10 +1,10 @@
-import { RoomSearch } from "../interfaces/reservation.interface";
-import { Room } from "../interfaces/room.inteface";
+import { RoomSearch } from "../common/interfaces/room-search.interface";
 import { DynamoDBClient, ScanCommand } from "@aws-sdk/client-dynamodb";
 import { parseDynamoRecordToObject } from "../util/dynamo.util";
+import { RoomEntity } from "../common/entities/room";
 
 const client = new DynamoDBClient({});
-const TABLE_NAME = process.env.ROOMS_TABLE;
+const TABLE_NAME = process.env.ROOM_TABLE;
 
 export const create = async () => {
 	return "User created";
@@ -22,8 +22,10 @@ export const updateAvailability = async () => {
 	return "Room availability updated";
 };
 
-export const findByType = async (roomTypes: RoomSearch[]): Promise<Room[]> => {
-	let availableRooms: Room[] = [];
+export const findByType = async (
+	roomTypes: RoomSearch[]
+): Promise<RoomEntity[]> => {
+	let availableRooms: RoomEntity[] = [];
 	roomTypes.forEach(async (roomType) => {
 		let responseDdb = await client.send(
 			new ScanCommand({ TableName: TABLE_NAME })
@@ -32,7 +34,7 @@ export const findByType = async (roomTypes: RoomSearch[]): Promise<Room[]> => {
 			throw Error(`Not enough available rooms for type: ${roomType.type}`);
 
 		let selectedRooms = responseDdb.Items.slice(0, roomType.count - 1);
-		let parsedRooms: Room[] = parseDynamoRecordToObject(selectedRooms);
+		let parsedRooms: RoomEntity[] = parseDynamoRecordToObject(selectedRooms);
 		availableRooms.concat(parsedRooms);
 	});
 	return availableRooms;

@@ -1,19 +1,19 @@
-import { Room } from "../interfaces/room.inteface";
-import { User } from "../interfaces/user.interface";
 import { DynamoDBClient, PutItemCommand } from "@aws-sdk/client-dynamodb";
-import { v4 as uuid } from "uuid";
+import { ulid } from "ulid";
+import { RoomEntity } from "../common/entities/room";
+import { UserEntity } from "../common/entities/user";
 
 const client = new DynamoDBClient({});
-const TABLE_NAME = process.env.RESERVATIONS_TABLE;
+const TABLE_NAME = process.env.RESERVATION_TABLE;
 
-export const create = async (user: User, reservedRooms: Room[]) => {
+export const create = async (user: UserEntity, reservedRooms: RoomEntity[]) => {
 	let roomIds = reservedRooms.map((room) => room.id);
 	let response = await client.send(
 		new PutItemCommand({
 			ConditionExpression: "attribute_not_exists(id)",
 			TableName: TABLE_NAME,
 			Item: {
-				id: { S: uuid() },
+				id: { S: ulid() },
 				haabitaciones: { SS: roomIds },
 				usuario: { S: user.id },
 				fecha: { S: new Date().toTimeString() },
