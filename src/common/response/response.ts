@@ -1,6 +1,6 @@
 import { CustomErrorEntity } from "../entities/custom-error";
 
-export const set = async (code: number, data: any) => {
+export const set = async (code = 200, data = {}) => {
 	return {
 		statusCode: code,
 		body: JSON.stringify(data),

@@ -1,7 +1,6 @@
 import {
 	APIGatewayProxyEvent,
 	APIGatewayProxyResult,
-	APIGatewayTokenAuthorizerEvent,
 	APIGatewayAuthorizerResult,
 } from "aws-lambda";
 import { login as loginAuhtentication } from "../authentication/services";
@@ -26,16 +25,36 @@ export const login = async (
 };
 
 export const checkAuthentication = async (
-	event: APIGatewayTokenAuthorizerEvent
+	event
 ): Promise<APIGatewayAuthorizerResult> => {
-	const { authorizationToken, methodArn } = event;
+	const { authorizationToken, methodArn, requestContext } = event;
 
 	try {
 		const tokenParts = authorizationToken.split(" ");
 
 		const token = tokenParts[1];
 
-		const { userId } = jsonwebtoken.verify(token, process.env.PRIVATE_KEY);
+		const { userId, role } = jsonwebtoken.verify(
+			token,
+			process.env.PRIVATE_KEY
+		);
+
+		console.log(requestContext, role);
+
+		if (role == "REGULAR") {
+			if (
+				!(
+					requestContext.httpMethod == "POST" &&
+					requestContext.resourcePath == "/reservation"
+				) &&
+				!(
+					requestContext.httpMethod == "GET" &&
+					requestContext.resourcePath == "/room"
+				)
+			) {
+				return await generateAuthResponse("userId", "Deny", methodArn, null);
+			}
+		}
 
 		const context = {
 			userId,

@@ -51,8 +51,6 @@ functions:
           method: POST
           path: /user
           cors: true
-          authorizer:
-            name: authorizerJWT
   # createRoom:
   #   handler: src/lambdas/room.create
   #   events:

@@ -1,5 +1,6 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 import { create as createUser } from "../user/services";
+import { set as setError } from "../common/error/error";
 import {
 	set as setResponse,
 	setError as setErrorResponse,
@@ -11,9 +12,23 @@ export const create = async (
 	try {
 		const { names, email, password } = JSON.parse(event.body);
 
-		const data = await createUser(names, email, password);
+		if (!names) {
+			throw setError(400, "Names not send");
+		}
 
-		return await setResponse(200, data);
+		if (!email) {
+			throw setError(400, "Email not send");
+		}
+
+		if (!password) {
+			throw setError(400, "Password not send");
+		}
+
+		await createUser(names, email, password);
+
+		return await setResponse(200, {
+			message: "User created",
+		});
 	} catch (error) {
 		return await setErrorResponse(error);
 	}
