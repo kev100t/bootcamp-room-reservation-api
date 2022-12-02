@@ -5,5 +5,5 @@ export interface ReservationEntity {
 	id: string;
 	user: UserEntity;
 	rooms: RoomEntity[];
-	date: Date;
+	date: Date | string;
 }

@@ -1,5 +1,5 @@
 export interface RoomEntity {
-	id: string;
+	_id: string;
 	type: string;
 	photo: string;
 	capacity: number;

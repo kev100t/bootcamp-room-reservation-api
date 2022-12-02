@@ -137,30 +137,54 @@ export const updateAvailability = async (
 };
 
 export const findByType = async (
-	roomTypes: RoomSearch[]
+	roomType: RoomSearch
 ): Promise<RoomEntity[]> => {
-	let availableRooms: RoomEntity[] = [];
-	roomTypes.forEach(async (roomType) => {
-		let responseDdb = await client.send(
-			new ScanCommand({
-				TableName: TABLE_NAME,
-				FilterExpression: "#disponibility = :disponibility AND #type = :type",
-				ExpressionAttributeNames: {
-					"#disponibility": "disponibility",
-					"#type": "type",
-				},
-				ExpressionAttributeValues: {
-					":disponibility": { BOOL: true },
-					":type": { S: roomType.type },
-				},
-			})
-		);
-		if (!responseDdb.Items || responseDdb.Items.length < roomType.count)
-			throw Error(`Not enough available rooms for type: ${roomType.type}`);
+	let responseDdb = await client.send(
+		new ScanCommand({
+			TableName: TABLE_NAME,
+			FilterExpression: "#disponibility = :disponibility AND #type = :type",
+			ExpressionAttributeNames: {
+				"#disponibility": "disponibility",
+				"#type": "type",
+			},
+			ExpressionAttributeValues: {
+				":disponibility": { BOOL: true },
+				":type": { S: roomType.type },
+			},
+		})
+	);
+	if (!responseDdb.Items || responseDdb.Items.length < roomType.count)
+		throw Error(`Not enough available rooms for type: ${roomType.type}`);
 
-		let selectedRooms = responseDdb.Items.slice(0, roomType.count - 1);
-		let parsedRooms: RoomEntity[] = parseDynamoRecordToObject(selectedRooms);
-		availableRooms.concat(parsedRooms);
-	});
-	return availableRooms;
+	console.log("responseDdb.Items\n", responseDdb.Items);
+	let selectedRooms = responseDdb.Items.slice(0, roomType.count);
+	console.log("selectedRooms\n", selectedRooms);
+	let parsedRooms: RoomEntity[] = parseDynamoRecordToObject(
+		selectedRooms
+	) as RoomEntity[];
+	console.log("parsedRooms\n", parsedRooms);
+	return parsedRooms;
+};
+
+export const findById = async (roomId: string): Promise<RoomEntity> => {
+	let availableRoom: RoomEntity;
+	let responseDdb = await client.send(
+		new ScanCommand({
+			TableName: TABLE_NAME,
+			FilterExpression: "#disponibility = :disponibility AND #_id = :_id",
+			ExpressionAttributeNames: {
+				"#disponibility": "disponibility",
+				"#_id": "_id",
+			},
+			ExpressionAttributeValues: {
+				":disponibility": { BOOL: true },
+				":_id": { S: roomId },
+			},
+		})
+	);
+	if (!responseDdb.Items || responseDdb.Items.length == 0)
+		throw Error("Room is not available.");
+	availableRoom = parseDynamoRecordToObject(responseDdb.Items)[0] as RoomEntity;
+	console.log("availableRoom\n", availableRoom);
+	return availableRoom;
 };
