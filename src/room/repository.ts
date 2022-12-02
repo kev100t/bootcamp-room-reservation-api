@@ -1,3 +1,5 @@
+import {Room} from "../common/entities/room";
+
 export const create = async () => {
 	return "User created";
 };
@@ -49,12 +51,13 @@ export const update = async (id: string, obj: any) => {
 							message: err,
 						}),
 					});
-				} else {
+				} else {			
+		
 					console.log("Actualizó correctamente", data);
 					resolve({
 						statusCode: 200,
 						body: JSON.stringify({
-							message: "Registro Actualizado",
+							data
 						}),
 					});
 				}
@@ -71,7 +74,7 @@ export const update = async (id: string, obj: any) => {
 	}
 };
 
-export const updateAvailability = async (id: string, disponibility1: any)=> {
+export const updateAvailability = async (id: string, body : {disponibility: boolean})=> {
 	try {
 		const AWS = require("aws-sdk");
 
@@ -90,7 +93,7 @@ export const updateAvailability = async (id: string, disponibility1: any)=> {
 			},
 			ExpressionAttributeValues: {
 				
-				":_disponibility": disponibility1.disponibility
+				":_disponibility": body.disponibility
 				
 			},
 			ReturnValues: "UPDATED_NEW",
@@ -112,7 +115,7 @@ export const updateAvailability = async (id: string, disponibility1: any)=> {
 					resolve({
 						statusCode: 200,
 						body: JSON.stringify({
-							message: "Registro Actualizado",
+							data
 						}),
 					});
 				}
