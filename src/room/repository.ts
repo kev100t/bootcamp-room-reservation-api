@@ -65,7 +65,51 @@ export const create = async (body: any) => {
 };
 
 export const list = async () => {
-	return "Listed rooms";
+	const params = {
+		TableName: TABLE_NAME,
+		FilterExpression: 'ENTITY_TYPE = :entity',
+		ExpressionAttributeValues: {
+			':entity': {
+				S: 'ROOM'
+			}
+		}
+	};
+
+	try {
+		const response = await dynamodb.scan(params);
+
+		const items = (response.Items !== undefined) ? response.Items : []
+
+		const rooms = items.map(item => {
+      const id: string = item.id.S ?? ''
+      const type: string = item.type.S ?? ''
+      const photo: string = item.photo.S ?? ''
+      const capacity: string = item.capacity.N ?? ''
+      const cost: string = item.cost.N ?? ''
+      const disponibility: boolean = item.disponibility.BOOL ?? true
+      const description: string = item.description.S ?? ''
+
+      return {
+        id,
+        type,
+        photo,
+        capacity: Number(capacity),
+        cost: Number(cost),
+        disponibility,
+        description
+      }
+    })
+
+		return {
+			statusCode: 200,
+			body: JSON.stringify(rooms)
+		}
+	} catch (e) {
+		return {
+			statusCode: 500,
+			body: JSON.stringify('Error al obtener las habitaciones')
+		}
+	}
 };
 
 export const update = async (id: string, obj: any) => {
