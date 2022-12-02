@@ -44,22 +44,22 @@ functions:
           method: POST
           path: /user
           cors: true
-  # createRoom:
-  #   handler: src/lambdas/room.create
-  #   events:
-  #     - http:
-  #         method: POST
-  #         path: /room
-  #         authorizer:
-  #           name: authorizerJWT
-  # listRoom:
-  #   handler: src/lambdas/room.list
-  #   events:
-  #     - http:
-  #         method: GET
-  #         path: /room
-  #         authorizer:
-  #           name: authorizerJWT
+  createRoom:
+    handler: src/lambdas/room.create
+    events:
+      - http:
+          method: POST
+          path: /room
+          authorizer:
+            name: authorizerJWT
+  listRoom:
+    handler: src/lambdas/room.list
+    events:
+      - http:
+          method: GET
+          path: /room
+          authorizer:
+            name: authorizerJWT
   updateRoom:
     handler: src/lambdas/room.update
     events:

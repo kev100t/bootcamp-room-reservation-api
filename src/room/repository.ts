@@ -24,7 +24,7 @@ export const create = async (body: any) => {
 	const params = {
 		TableName: TABLE_NAME,
 		Item: {
-			id: {
+			_id: {
 				S: room.id,
 			},
 			type: {
@@ -81,7 +81,7 @@ export const list = async () => {
 		const items = (response.Items !== undefined) ? response.Items : []
 
 		const rooms = items.map(item => {
-      const id: string = item.id.S ?? ''
+      const id: string = item._id.S ?? ''
       const type: string = item.type.S ?? ''
       const photo: string = item.photo.S ?? ''
       const capacity: string = item.capacity.N ?? ''
