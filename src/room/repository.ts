@@ -1,13 +1,67 @@
 import { RoomEntity } from "../common/entities/room";
 import { RoomSearch } from "../common/interfaces/room-search.interface";
-import { DynamoDBClient, ScanCommand } from "@aws-sdk/client-dynamodb";
+import { DynamoDBClient, ScanCommand, DynamoDB } from "@aws-sdk/client-dynamodb";
 import { parseDynamoRecordToObject } from "../util/dynamo.util";
+import { v4 as uuidv4 } from 'uuid'
+
+const dynamodb = new DynamoDB({});
 
 const client = new DynamoDBClient({});
 const TABLE_NAME = process.env.ROOM_TABLE;
 
-export const create = async () => {
-	return "User created";
+export const create = async (body: any) => {
+
+	const room: RoomEntity = {
+		id: uuidv4(),
+		type: body.type,
+		photo: body.photo,
+		capacity: body.capacity,
+		cost: body.cost,
+		disponibility: body.disponibility,
+		description: body.description
+	}
+
+	const params = {
+		TableName: TABLE_NAME,
+		Item: {
+			id: {
+				S: room.id,
+			},
+			type: {
+				S: room.type,
+			},
+			photo: {
+				S: room.photo,
+			},
+			capacity: {
+				N: `${room.capacity}`,
+			},
+			cost: {
+				N: `${room.cost}`,
+			},
+			disponibility: {
+				BOOL: room.disponibility,
+			},
+			description: {
+				S: room.description,
+			},
+		},
+	};
+
+	try {
+		await dynamodb.putItem(params)
+		return {
+			statusCode: 200,
+			body: JSON.stringify(room)
+		}
+	} catch (e) {
+		return {
+			statusCode: 500,
+			body: JSON.stringify({
+				message: "Error al crear habitacion",
+			}),
+		};
+	}
 };
 
 export const list = async () => {

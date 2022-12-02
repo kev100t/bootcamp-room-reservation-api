@@ -5,8 +5,8 @@ import {
 	updateAvailability as updateAvailabilityRepository,
 } from "./repository";
 
-export const create = async () => {
-	return await createRepository();
+export const create = async (body: string) => {
+	return await createRepository(body);
 };
 
 export const list = async () => {
