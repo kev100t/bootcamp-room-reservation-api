@@ -19,5 +19,5 @@ export const create = async (
 		role: RoleEnum.REGULAR,
 	};
 
-	return await createRepository(user);
+	await createRepository(user);
 };

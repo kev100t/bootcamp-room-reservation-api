@@ -27,5 +27,5 @@ export const create = async (user: UserEntity) => {
 		Item: product,
 	};
 
-	return await dynamodb.putItem(params);
+	await dynamodb.putItem(params);
 };
