@@ -1,16 +1,17 @@
 import { RoomEntity } from "../common/entities/room";
 import { RoomSearch } from "../common/interfaces/room-search.interface";
-import { DynamoDBClient, ScanCommand, DynamoDB } from "@aws-sdk/client-dynamodb";
+import {
+	DynamoDBClient,
+	ScanCommand,
+	PutItemCommand,
+} from "@aws-sdk/client-dynamodb";
 import { parseDynamoRecordToObject } from "../util/dynamo.util";
-import { v4 as uuidv4 } from 'uuid'
-
-const dynamodb = new DynamoDB({});
+import { v4 as uuidv4 } from "uuid";
 
 const client = new DynamoDBClient({});
 const TABLE_NAME = process.env.ROOM_TABLE;
 
 export const create = async (body: any) => {
-
 	const room: RoomEntity = {
 		id: uuidv4(),
 		type: body.type,
@@ -18,8 +19,8 @@ export const create = async (body: any) => {
 		capacity: body.capacity,
 		cost: body.cost,
 		disponibility: body.disponibility,
-		description: body.description
-	}
+		description: body.description,
+	};
 
 	const params = {
 		TableName: TABLE_NAME,
@@ -47,18 +48,19 @@ export const create = async (body: any) => {
 			},
 		},
 	};
-
 	try {
-		await dynamodb.putItem(params)
+		const commmand = new PutItemCommand(params);
+		const data = await client.send(commmand);
+		console.log(data);
 		return {
 			statusCode: 200,
-			body: JSON.stringify(room)
-		}
+			body: JSON.stringify(room),
+		};
 	} catch (e) {
 		return {
 			statusCode: 500,
 			body: JSON.stringify({
-				message: "Error al crear habitacion",
+				message: e.message,
 			}),
 		};
 	}
@@ -67,48 +69,43 @@ export const create = async (body: any) => {
 export const list = async () => {
 	const params = {
 		TableName: TABLE_NAME,
-		FilterExpression: 'ENTITY_TYPE = :entity',
-		ExpressionAttributeValues: {
-			':entity': {
-				S: 'ROOM'
-			}
-		}
 	};
 
 	try {
-		const response = await dynamodb.scan(params);
+		const command = new ScanCommand(params);
+		const response = await client.send(command);
 
-		const items = (response.Items !== undefined) ? response.Items : []
+		const items = response.Items !== undefined ? response.Items : [];
 
-		const rooms = items.map(item => {
-      const id: string = item._id.S ?? ''
-      const type: string = item.type.S ?? ''
-      const photo: string = item.photo.S ?? ''
-      const capacity: string = item.capacity.N ?? ''
-      const cost: string = item.cost.N ?? ''
-      const disponibility: boolean = item.disponibility.BOOL ?? true
-      const description: string = item.description.S ?? ''
+		const rooms = items.map((item) => {
+			const id: string = item._id.S ?? "";
+			const type: string = item.type.S ?? "";
+			const photo: string = item.photo.S ?? "";
+			const capacity: string = item.capacity.N ?? "";
+			const cost: string = item.cost.N ?? "";
+			const disponibility: boolean = item.disponibility.BOOL ?? true;
+			const description: string = item.description.S ?? "";
 
-      return {
-        id,
-        type,
-        photo,
-        capacity: Number(capacity),
-        cost: Number(cost),
-        disponibility,
-        description
-      }
-    })
+			return {
+				id,
+				type,
+				photo,
+				capacity: Number(capacity),
+				cost: Number(cost),
+				disponibility,
+				description,
+			};
+		});
 
 		return {
 			statusCode: 200,
-			body: JSON.stringify(rooms)
-		}
+			body: JSON.stringify(rooms),
+		};
 	} catch (e) {
 		return {
 			statusCode: 500,
-			body: JSON.stringify('Error al obtener las habitaciones')
-		}
+			body: JSON.stringify("Error al obtener las habitaciones"),
+		};
 	}
 };
 

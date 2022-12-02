@@ -10,7 +10,7 @@ export const create = async (
 	event: APIGatewayProxyEvent
 ): Promise<APIGatewayProxyResult> => {
 
-	const { body } = event
+	const body = JSON.parse(event.body)
 	try {
 		return await createRoom(body)
 	} catch (err) {
