@@ -112,7 +112,7 @@ export const list = async () => {
 export const update = async (id: string, obj: any) => {
 	try {
 		const AWS = require("aws-sdk");
-
+		
 		const dynamodb = new AWS.DynamoDB.DocumentClient();
 
 		const params = {
