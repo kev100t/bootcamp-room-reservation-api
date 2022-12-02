@@ -12,8 +12,8 @@ provider:
   environment:
     PRIVATE_KEY: mHlL8LkJK7KmBd45TKl1
     USER_TABLE: ${self:service}-user-${sls:stage}
-    ROOM_TABLE: ${self:service}-user-${sls:stage}
-    RESERVATION_TABLE: ${self:service}-user-${sls:stage}
+    ROOM_TABLE: ${self:service}-room-${sls:stage}
+    RESERVATION_TABLE: ${self:service}-reservation-${sls:stage}
   iam:
     role:
       statements:
@@ -77,22 +77,22 @@ functions:
   #         path: /room/{id}
   #         authorizer:
   #           name: authorizerJWT
-  # updateAvailabilityRoom:
-  #   handler: src/lambdas/room.updateAvailability
-  #   events:
-  #     - http:
-  #         method: PATCH
-  #         path: /room/{id}/availability
-  #         authorizer:
-  #           name: authorizerJWT
-  # createReservation:
-  #   handler: src/lambdas/reservation.create
-  #   events:
-  #     - http:
-  #         method: POST
-  #         path: /reservation
-  #         authorizer:
-  #           name: authorizerJWT
+  updateAvailabilityRoom:
+    handler: src/lambdas/room.updateAvailability
+    events:
+      - http:
+          method: PATCH
+          path: /room/{id}/availability
+          authorizer:
+            name: authorizerJWT
+  createReservation:
+    handler: src/lambdas/reservation.create
+    events:
+      - http:
+          method: POST
+          path: /reservation
+          authorizer:
+            name: authorizerJWT
 
 resources:
   Resources:

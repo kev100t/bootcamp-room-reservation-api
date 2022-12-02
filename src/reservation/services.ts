@@ -1,11 +1,11 @@
+import { RoomEntity } from "../common/entities/room";
+import { UserEntity } from "../common/entities/user";
+import { RoomSearch } from "../common/interfaces/room-search.interface";
 import { create as createRepository } from "./repository";
 import {
 	updateAvailability as updateRoomRepository,
 	findByType as findByTypeRepository,
 } from "../room/repository";
-import { RoomSearch } from "../common/interfaces/room-search.interface";
-import { RoomEntity } from "../common/entities/room";
-import { UserEntity } from "../common/entities/user";
 
 export const create = async (
 	user: UserEntity,
@@ -18,8 +18,9 @@ export const create = async (
 		else if (roomTypes) reservedRooms = await findByTypeRepository(roomTypes);
 		else throw Error("Bad Request");
 		const reservation = await createRepository(user, reservedRooms);
-		// reservedRooms.forEach(room => updateRoomRepository(room));
-		reservedRooms.forEach(() => updateRoomRepository());
+		reservedRooms.forEach((room) =>
+			updateRoomRepository(room.id, { disponibility: false })
+		);
 		return reservation;
 	} catch (err) {
 		throw err;

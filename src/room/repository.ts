@@ -1,7 +1,7 @@
+import { RoomEntity } from "../common/entities/room";
 import { RoomSearch } from "../common/interfaces/room-search.interface";
 import { DynamoDBClient, ScanCommand } from "@aws-sdk/client-dynamodb";
 import { parseDynamoRecordToObject } from "../util/dynamo.util";
-import { RoomEntity } from "../common/entities/room";
 
 const client = new DynamoDBClient({});
 const TABLE_NAME = process.env.ROOM_TABLE;
@@ -142,7 +142,18 @@ export const findByType = async (
 	let availableRooms: RoomEntity[] = [];
 	roomTypes.forEach(async (roomType) => {
 		let responseDdb = await client.send(
-			new ScanCommand({ TableName: TABLE_NAME })
+			new ScanCommand({
+				TableName: TABLE_NAME,
+				FilterExpression: "#disponibility = :disponibility AND #type = :type",
+				ExpressionAttributeNames: {
+					"#disponibility": "disponibility",
+					"#type": "type",
+				},
+				ExpressionAttributeValues: {
+					":disponibility": { BOOL: true },
+					":type": { S: roomType.type },
+				},
+			})
 		);
 		if (!responseDdb.Items || responseDdb.Items.length < roomType.count)
 			throw Error(`Not enough available rooms for type: ${roomType.type}`);

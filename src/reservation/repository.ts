@@ -20,4 +20,5 @@ export const create = async (user: UserEntity, reservedRooms: RoomEntity[]) => {
 			},
 		})
 	);
+	return response;
 };

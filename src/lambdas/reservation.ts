@@ -1,11 +1,12 @@
-import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 import { RoomEntity } from "../common/entities/room";
+import { CustomErrorEntity } from "../common/entities/custom-error";
 import { RoomSearch } from "../common/interfaces/room-search.interface";
-import { create as createService } from "../reservation/services";
 import {
 	set as setResponse,
 	setError as setErrorResponse,
 } from "../common/response/response";
+import { create as createService } from "../reservation/services";
+import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 
 export const create = async (
 	event: APIGatewayProxyEvent
@@ -24,14 +25,9 @@ export const create = async (
 			requestedTypes
 		);
 
-		return await setResponse(200, data);
+		return await setResponse(201, data);
 	} catch (err: any) {
 		console.log(err);
-		return {
-			statusCode: 500,
-			body: JSON.stringify({
-				message: err.message,
-			}),
-		};
+		return await setErrorResponse(err as CustomErrorEntity);
 	}
 };
