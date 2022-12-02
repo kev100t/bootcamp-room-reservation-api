@@ -25,14 +25,7 @@ provider:
             - dynamodb:PutItem
             - dynamodb:UpdateItem
             - dynamodb:DeleteItem
-          Resource: "arn:aws:dynamodb:${aws:region}:*:table/${self:provider.environment.USER_TABLE}"
-        - Effect: Allow
-          Action:
-            - dynamodb:Query
-            - dynamodb:Scan
-            - dynamodb:GetItem
-            - dynamodb:PutItem
-          Resource: "arn:aws:dynamodb:${aws:region}:*:table/${self:provider.environment.RESERVATION_TABLE}"
+          Resource: "*"
 
 functions:
   authorizerJWT:
@@ -67,14 +60,14 @@ functions:
   #         path: /room
   #         authorizer:
   #           name: authorizerJWT
-  # updateRoom:
-  #   handler: src/lambdas/room.update
-  #   events:
-  #     - http:
-  #         method: PUT
-  #         path: /room/{id}
-  #         authorizer:
-  #           name: authorizerJWT
+  updateRoom:
+    handler: src/lambdas/room.update
+    events:
+      - http:
+          method: PUT
+          path: /room/{id}
+          authorizer:
+            name: authorizerJWT
   updateAvailabilityRoom:
     handler: src/lambdas/room.updateAvailability
     events:
@@ -83,14 +76,14 @@ functions:
           path: /room/{id}/availability
           authorizer:
             name: authorizerJWT
-  createReservation:
-    handler: src/lambdas/reservation.create
-    events:
-      - http:
-          method: POST
-          path: /reservation
-          authorizer:
-            name: authorizerJWT
+  # createReservation:
+  #   handler: src/lambdas/reservation.create
+  #   events:
+  #     - http:
+  #         method: POST
+  #         path: /reservation
+  #         authorizer:
+  #           name: authorizerJWT
 
 resources:
   Resources:
@@ -143,6 +136,21 @@ resources:
             ProvisionedThroughput:
               ReadCapacityUnits: 1
               WriteCapacityUnits: 1
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+
+    RoomsTable:
+      Type: AWS::DynamoDB::Table
+      DeletionPolicy: Retain
+      Properties:
+        TableName: ${self:provider.environment.ROOM_TABLE}
+        AttributeDefinitions:
+          - AttributeName: _id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: _id
+            KeyType: HASH
         ProvisionedThroughput:
           ReadCapacityUnits: 1
           WriteCapacityUnits: 1

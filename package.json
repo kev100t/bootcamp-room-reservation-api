@@ -45,12 +45,10 @@
   	"typescript": "^4.8.4"
   },
   "dependencies": {
-  	"bcryptjs": "^2.4.3",
-  	"jsonwebtoken": "^8.5.1",
-  	"ulid": "^2.3.0",
-  	"@aws-sdk/client-dynamodb": "^3.218.0",
-  	"@aws-sdk/util-dynamodb": "^3.218.0",
-  	"aws-sdk": "2.1264.0",
-  	"serverless": "3.25.1"
+    "aws-sdk": "2.1264.0",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^8.5.1",
+    "serverless": "3.25.1",
+    "ulid": "^2.3.0"
   }
 }

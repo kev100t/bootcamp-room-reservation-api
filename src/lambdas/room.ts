@@ -1,6 +1,6 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
-import {update as updateRoom} from "../room/services";
-import{updateAvailability as updateAvailabilityRoom } from "../room/services" 
+import { update as updateRoom } from "../room/services";
+import { updateAvailability as updateAvailabilityRoom } from "../room/services";
 
 export const create = async (
 	event: APIGatewayProxyEvent
@@ -48,10 +48,9 @@ export const update = async (
 	event: APIGatewayProxyEvent
 ): Promise<APIGatewayProxyResult> => {
 	try {
-		const id=event.pathParameters.id;
-		const body=event.body;
-		return await updateRoom(id,body);
-		
+		const id = event.pathParameters.id;
+		const body = event.body;
+		return await updateRoom(id, body);
 	} catch (err) {
 		console.log(err);
 		return {
@@ -67,9 +66,9 @@ export const updateAvailability = async (
 	event: APIGatewayProxyEvent
 ): Promise<APIGatewayProxyResult> => {
 	try {
-		const id=event.pathParameters.id;
-		const body=event.body;
-		return await updateAvailabilityRoom(id,body);
+		const id = event.pathParameters.id;
+		const body = event.body;
+		return await updateAvailabilityRoom(id, body);
 	} catch (err) {
 		console.log(err);
 		return {

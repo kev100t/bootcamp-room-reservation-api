@@ -21,7 +21,7 @@ export const update = async (id: string, obj: any) => {
 		const dynamodb = new AWS.DynamoDB.DocumentClient();
 
 		const params = {
-			TableName: "rooms",
+			TableName: process.env.ROOM_TABLE,
 			Key: {
 				_id: id,
 			},
@@ -89,7 +89,7 @@ export const updateAvailability = async (
 		const dynamodb = new AWS.DynamoDB.DocumentClient();
 
 		const params = {
-			TableName: "rooms",
+			TableName: process.env.ROOM_TABLE,
 			Key: {
 				_id: id,
 			},
