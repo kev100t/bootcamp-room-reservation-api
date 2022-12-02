@@ -71,7 +71,7 @@ export const update = async (id: string, obj: any) => {
 	}
 };
 
-export const updateAvailability = async (id: string, disponibility1: boolean)=> {
+export const updateAvailability = async (id: string, disponibility1: any)=> {
 	try {
 		const AWS = require("aws-sdk");
 
