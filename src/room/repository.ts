@@ -1,4 +1,10 @@
-import {Room} from "../common/entities/room";
+import { RoomEntity } from "../common/entities/room";
+import { RoomSearch } from "../common/interfaces/room-search.interface";
+import { DynamoDBClient, ScanCommand } from "@aws-sdk/client-dynamodb";
+import { parseDynamoRecordToObject } from "../util/dynamo.util";
+
+const client = new DynamoDBClient({});
+const TABLE_NAME = process.env.ROOM_TABLE;
 
 export const create = async () => {
 	return "User created";
@@ -51,13 +57,12 @@ export const update = async (id: string, obj: any) => {
 							message: err,
 						}),
 					});
-				} else {			
-		
+				} else {
 					console.log("Actualizó correctamente", data);
 					resolve({
 						statusCode: 200,
 						body: JSON.stringify({
-							data
+							data,
 						}),
 					});
 				}
@@ -74,7 +79,10 @@ export const update = async (id: string, obj: any) => {
 	}
 };
 
-export const updateAvailability = async (id: string, body : {disponibility: boolean})=> {
+export const updateAvailability = async (
+	id: string,
+	body: { disponibility: boolean }
+) => {
 	try {
 		const AWS = require("aws-sdk");
 
@@ -85,16 +93,12 @@ export const updateAvailability = async (id: string, body : {disponibility: bool
 			Key: {
 				_id: id,
 			},
-			UpdateExpression:
-				"SET   #disponibility = :_disponibility",
-			ExpressionAttributeNames: {				
-				"#disponibility": "disponibility"
-				
+			UpdateExpression: "SET   #disponibility = :_disponibility",
+			ExpressionAttributeNames: {
+				"#disponibility": "disponibility",
 			},
 			ExpressionAttributeValues: {
-				
-				":_disponibility": body.disponibility
-				
+				":_disponibility": body.disponibility,
 			},
 			ReturnValues: "UPDATED_NEW",
 		};
@@ -115,7 +119,7 @@ export const updateAvailability = async (id: string, body : {disponibility: bool
 					resolve({
 						statusCode: 200,
 						body: JSON.stringify({
-							data
+							data,
 						}),
 					});
 				}
@@ -130,4 +134,33 @@ export const updateAvailability = async (id: string, body : {disponibility: bool
 			}),
 		};
 	}
+};
+
+export const findByType = async (
+	roomTypes: RoomSearch[]
+): Promise<RoomEntity[]> => {
+	let availableRooms: RoomEntity[] = [];
+	roomTypes.forEach(async (roomType) => {
+		let responseDdb = await client.send(
+			new ScanCommand({
+				TableName: TABLE_NAME,
+				FilterExpression: "#disponibility = :disponibility AND #type = :type",
+				ExpressionAttributeNames: {
+					"#disponibility": "disponibility",
+					"#type": "type",
+				},
+				ExpressionAttributeValues: {
+					":disponibility": { BOOL: true },
+					":type": { S: roomType.type },
+				},
+			})
+		);
+		if (!responseDdb.Items || responseDdb.Items.length < roomType.count)
+			throw Error(`Not enough available rooms for type: ${roomType.type}`);
+
+		let selectedRooms = responseDdb.Items.slice(0, roomType.count - 1);
+		let parsedRooms: RoomEntity[] = parseDynamoRecordToObject(selectedRooms);
+		availableRooms.concat(parsedRooms);
+	});
+	return availableRooms;
 };

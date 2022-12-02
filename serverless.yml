@@ -12,6 +12,8 @@ provider:
   environment:
     PRIVATE_KEY: mHlL8LkJK7KmBd45TKl1
     USER_TABLE: ${self:service}-user-${sls:stage}
+    ROOM_TABLE: ${self:service}-room-${sls:stage}
+    RESERVATION_TABLE: ${self:service}-reservation-${sls:stage}
   iam:
     role:
       statements:
@@ -24,6 +26,13 @@ provider:
             - dynamodb:UpdateItem
             - dynamodb:DeleteItem
           Resource: "arn:aws:dynamodb:${aws:region}:*:table/${self:provider.environment.USER_TABLE}"
+        - Effect: Allow
+          Action:
+            - dynamodb:Query
+            - dynamodb:Scan
+            - dynamodb:GetItem
+            - dynamodb:PutItem
+          Resource: "arn:aws:dynamodb:${aws:region}:*:table/${self:provider.environment.RESERVATION_TABLE}"
 
 functions:
   authorizerJWT:
@@ -66,22 +75,22 @@ functions:
   #         path: /room/{id}
   #         authorizer:
   #           name: authorizerJWT
-  # updateAvailabilityRoom:
-  #   handler: src/lambdas/room.updateAvailability
-  #   events:
-  #     - http:
-  #         method: PATCH
-  #         path: /room/{id}/availability
-  #         authorizer:
-  #           name: authorizerJWT
-  # createReservation:
-  #   handler: src/lambdas/reservation.create
-  #   events:
-  #     - http:
-  #         method: POST
-  #         path: /reservation
-  #         authorizer:
-  #           name: authorizerJWT
+  updateAvailabilityRoom:
+    handler: src/lambdas/room.updateAvailability
+    events:
+      - http:
+          method: PATCH
+          path: /room/{id}/availability
+          authorizer:
+            name: authorizerJWT
+  createReservation:
+    handler: src/lambdas/reservation.create
+    events:
+      - http:
+          method: POST
+          path: /reservation
+          authorizer:
+            name: authorizerJWT
 
 resources:
   Resources:
@@ -104,7 +113,33 @@ resources:
               - AttributeName: email
                 KeyType: HASH
             Projection:
-                  ProjectionType: 'ALL'
+              ProjectionType: "ALL"
+            ProvisionedThroughput:
+              ReadCapacityUnits: 1
+              WriteCapacityUnits: 1
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+    ReservationsTable:
+      Type: AWS::DynamoDB::Table
+      DeletionPolicy: Retain
+      Properties:
+        TableName: ${self:provider.environment.RESERVATION_TABLE}
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+          - AttributeName: date
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        GlobalSecondaryIndexes:
+          - IndexName: DateIndex
+            KeySchema:
+              - AttributeName: date
+                KeyType: HASH
+            Projection:
+              ProjectionType: "ALL"
             ProvisionedThroughput:
               ReadCapacityUnits: 1
               WriteCapacityUnits: 1
