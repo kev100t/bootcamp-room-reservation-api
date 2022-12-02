@@ -66,6 +66,7 @@ functions:
       - http:
           method: PUT
           path: /room/{id}
+          cors: true
           authorizer:
             name: authorizerJWT
   updateAvailabilityRoom:
@@ -74,16 +75,18 @@ functions:
       - http:
           method: PATCH
           path: /room/{id}/availability
+          cors: true
           authorizer:
             name: authorizerJWT
-  # createReservation:
-  #   handler: src/lambdas/reservation.create
-  #   events:
-  #     - http:
-  #         method: POST
-  #         path: /reservation
-  #         authorizer:
-  #           name: authorizerJWT
+  createReservation:
+    handler: src/lambdas/reservation.create
+    events:
+      - http:
+          method: POST
+          path: /reservation
+          cors: true
+          authorizer:
+            name: authorizerJWT
 
 resources:
   Resources:
@@ -113,6 +116,7 @@ resources:
         ProvisionedThroughput:
           ReadCapacityUnits: 1
           WriteCapacityUnits: 1
+
     ReservationsTable:
       Type: AWS::DynamoDB::Table
       DeletionPolicy: Retain
