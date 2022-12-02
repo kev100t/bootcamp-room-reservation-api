@@ -19,6 +19,9 @@ export const login = async (email: string, password: string) => {
 	}
 
 	return {
-		token: jsonwebtoken.sign({ userId: user.id }, process.env.PRIVATE_KEY),
+		token: jsonwebtoken.sign(
+			{ userId: user.id, role: user.role },
+			process.env.PRIVATE_KEY
+		),
 	};
 };
