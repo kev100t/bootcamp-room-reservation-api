@@ -1,4 +1,10 @@
 # bootcamp-room-reservation-api
+Prerequisitos:
+- Instalar Serverless Framework de forma global
+```bash
+    $ npm install -g serverless
+```
+- Instalar y configurar cuenta de AWS con AWS CLI
 
 Pasos para ejecutar la aplicación serverless:
 - Instalar dependencias
@@ -20,9 +26,3 @@ Pasos para ejecutar la aplicación serverless:
 ```bash
     npm run lambda:online
 ```
-
-URLs a consultar
-- URL local:
-    - http://localhost:3000/dev/cake?sick=true
-- URL pública:
-    - https://srycwadr5m.execute-api.us-east-1.amazonaws.com/dev/cake?sick=true

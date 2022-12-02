@@ -1,4 +1,4 @@
-service: serverless-aws
+service: bootcamp-room-reservation-api
 
 plugins:
   - serverless-offline
@@ -8,68 +8,106 @@ provider:
   name: aws
   runtime: nodejs16.x
   stage: dev
-  region: us-east-2
-   httpApi:
-     authorizers:
-       customAuthorizer:
-         type: request
-         functionName: authorizerFunc
+  region: us-east-1
+  environment:
+    PRIVATE_KEY: mHlL8LkJK7KmBd45TKl1
+    USER_TABLE: ${self:service}-user-${sls:stage}
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - dynamodb:Query
+            - dynamodb:Scan
+            - dynamodb:GetItem
+            - dynamodb:PutItem
+            - dynamodb:UpdateItem
+            - dynamodb:DeleteItem
+          Resource: "arn:aws:dynamodb:${aws:region}:*:table/${self:provider.environment.USER_TABLE}"
 
 functions:
-   authorizerFunc:
-     handler: src/lambdas/authentication.checkAuthentication
-   login:
-     handler: src/lambdas/authentication.login
-     events:
-       - httpApi:
-           method: POST
-           path: /authentication/login
-   createUser:
-     handler: src/lambdas/user.create
-     events:
-       - httpApi:
-           method: POST
-           path: /user
-           authorizer:
-             name: authorizerFunc
-   createRoom:
-     handler: src/lambdas/room.create
-     events:
-       - httpApi:
-           method: POST
-           path: /room
-           # authorizer:
-           #   name: customAuthorizer
-   listRoom:
-     handler: src/lambdas/room.list
-     events:
-       - httpApi:
-           method: GET
-           path: /room
-           # authorizer:
-           #   name: customAuthorizer
-  updateRoomV2:
-    handler: src/lambdas/room.update
+  authorizerJWT:
+    handler: src/lambdas/authentication.checkAuthentication
+  login:
+    handler: src/lambdas/authentication.login
     events:
-      - httpApi:
-          method: PUT
-          path: /room/{id}
-          # authorizer:
-          #   name: customAuthorizer
-  updateAvailabilityRoomV2:
-    handler: src/lambdas/room.updateAvailability
+      - http:
+          method: POST
+          path: /authentication/login
+          cors: true
+  createUser:
+    handler: src/lambdas/user.create
     events:
-      - httpApi:
-          method: PATCH
-          path: /room/{id}/availability
-          # authorizer:
-          #   name: customAuthorizer
-   createReservation:
-     handler: src/lambdas/reservation.create
-     events:
-       - httpApi:
-           method: POST
-           path: /reservation
-           # authorizer:
-           #   name: customAuthorizer
+      - http:
+          method: POST
+          path: /user
+          cors: true
+  # createRoom:
+  #   handler: src/lambdas/room.create
+  #   events:
+  #     - http:
+  #         method: POST
+  #         path: /room
+  #         authorizer:
+  #           name: authorizerJWT
+  # listRoom:
+  #   handler: src/lambdas/room.list
+  #   events:
+  #     - http:
+  #         method: GET
+  #         path: /room
+  #         authorizer:
+  #           name: authorizerJWT
+  # updateRoom:
+  #   handler: src/lambdas/room.update
+  #   events:
+  #     - http:
+  #         method: PUT
+  #         path: /room/{id}
+  #         authorizer:
+  #           name: authorizerJWT
+  # updateAvailabilityRoom:
+  #   handler: src/lambdas/room.updateAvailability
+  #   events:
+  #     - http:
+  #         method: PATCH
+  #         path: /room/{id}/availability
+  #         authorizer:
+  #           name: authorizerJWT
+  # createReservation:
+  #   handler: src/lambdas/reservation.create
+  #   events:
+  #     - http:
+  #         method: POST
+  #         path: /reservation
+  #         authorizer:
+  #           name: authorizerJWT
 
+resources:
+  Resources:
+    UsersTable:
+      Type: AWS::DynamoDB::Table
+      DeletionPolicy: Retain
+      Properties:
+        TableName: ${self:provider.environment.USER_TABLE}
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+          - AttributeName: email
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        GlobalSecondaryIndexes:
+          - IndexName: EmailIndex
+            KeySchema:
+              - AttributeName: email
+                KeyType: HASH
+            Projection:
+                  ProjectionType: 'ALL'
+            ProvisionedThroughput:
+              ReadCapacityUnits: 1
+              WriteCapacityUnits: 1
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1

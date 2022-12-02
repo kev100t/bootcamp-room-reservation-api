@@ -1,46 +1,87 @@
-import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
+import {
+	APIGatewayProxyEvent,
+	APIGatewayProxyResult,
+	APIGatewayAuthorizerResult,
+} from "aws-lambda";
+import { login as loginAuhtentication } from "../authentication/services";
+import {
+	set as setResponse,
+	setError as setErrorResponse,
+} from "../common/response/response";
+import * as jsonwebtoken from "jsonwebtoken";
 
 export const login = async (
 	event: APIGatewayProxyEvent
 ): Promise<APIGatewayProxyResult> => {
 	try {
-		return {
-			statusCode: 200,
-			body: JSON.stringify({
-				message: "User logged in",
-			}),
-		};
-	} catch (err) {
-		console.log(err);
-		return {
-			statusCode: 500,
-			body: JSON.stringify({
-				message: "some error happened",
-			}),
-		};
+		const { email, password } = JSON.parse(event.body);
+
+		const data = await loginAuhtentication(email, password);
+
+		return await setResponse(200, data);
+	} catch (error) {
+		return await setErrorResponse(error);
 	}
 };
 
-export const checkAuthentication = async (event) => {
-	const methodArn = event.methodArn;
+export const checkAuthentication = async (
+	event
+): Promise<APIGatewayAuthorizerResult> => {
+	const { authorizationToken, methodArn, requestContext } = event;
 
 	try {
-		return generateAuthResponse("user", "Allow", methodArn);
-	} catch (err) {
-		return generateAuthResponse("user", "Deny", methodArn);
+		const tokenParts = authorizationToken.split(" ");
+
+		const token = tokenParts[1];
+
+		const { userId, role } = jsonwebtoken.verify(
+			token,
+			process.env.PRIVATE_KEY
+		);
+
+		console.log(requestContext, role);
+
+		if (role == "REGULAR") {
+			if (
+				!(
+					requestContext.httpMethod == "POST" &&
+					requestContext.resourcePath == "/reservation"
+				) &&
+				!(
+					requestContext.httpMethod == "GET" &&
+					requestContext.resourcePath == "/room"
+				)
+			) {
+				return await generateAuthResponse("userId", "Deny", methodArn, null);
+			}
+		}
+
+		const context = {
+			userId,
+		};
+
+		return await generateAuthResponse(userId, "Allow", methodArn, context);
+	} catch (error) {
+		return await generateAuthResponse("userId", "Deny", methodArn, null);
 	}
 };
 
-function generateAuthResponse(principalId, effect, methodArn) {
-	const policyDocument = generatePolicyDocument(effect, methodArn);
+const generateAuthResponse = async (
+	principalId: string,
+	effect: string,
+	methodArn: string,
+	context: any
+) => {
+	const policyDocument = await generatePolicyDocument(effect, methodArn);
 
 	return {
 		principalId,
 		policyDocument,
+		context,
 	};
-}
+};
 
-function generatePolicyDocument(effect, methodArn) {
+const generatePolicyDocument = async (effect: string, methodArn: string) => {
 	if (!effect || !methodArn) return null;
 
 	const policyDocument = {
@@ -55,4 +96,4 @@ function generatePolicyDocument(effect, methodArn) {
 	};
 
 	return policyDocument;
-}
+};
