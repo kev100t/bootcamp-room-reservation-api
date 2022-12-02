@@ -13,10 +13,11 @@ export const list = async () => {
 	return await listRepository();
 };
 
-export const update = async () => {
-	return await updateRepository();
+export const update = async (id:string , obj:string) => {
+	
+	return await updateRepository(id,JSON.parse(obj));
 };
 
-export const updateAvailability = async () => {
-	return await updateAvailabilityRepository();
+export const updateAvailability = async (id:string,body : any) => {
+	return await updateAvailabilityRepository(id,JSON.parse(body));
 };
