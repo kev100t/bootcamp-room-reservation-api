@@ -1,4 +1,4 @@
-import {Room} from "../common/entities/room";
+import { Room } from "../common/entities/room";
 
 export const create = async () => {
 	return "User created";
@@ -15,7 +15,7 @@ export const update = async (id: string, obj: any) => {
 		const dynamodb = new AWS.DynamoDB.DocumentClient();
 
 		const params = {
-			TableName: "rooms",
+			TableName: process.env.ROOM_TABLE,
 			Key: {
 				_id: id,
 			},
@@ -51,13 +51,12 @@ export const update = async (id: string, obj: any) => {
 							message: err,
 						}),
 					});
-				} else {			
-		
+				} else {
 					console.log("Actualizó correctamente", data);
 					resolve({
 						statusCode: 200,
 						body: JSON.stringify({
-							data
+							data,
 						}),
 					});
 				}
@@ -74,27 +73,26 @@ export const update = async (id: string, obj: any) => {
 	}
 };
 
-export const updateAvailability = async (id: string, body : {disponibility: boolean})=> {
+export const updateAvailability = async (
+	id: string,
+	body: { disponibility: boolean }
+) => {
 	try {
 		const AWS = require("aws-sdk");
 
 		const dynamodb = new AWS.DynamoDB.DocumentClient();
 
 		const params = {
-			TableName: "rooms",
+			TableName: process.env.ROOM_TABLE,
 			Key: {
 				_id: id,
 			},
-			UpdateExpression:
-				"SET   #disponibility = :_disponibility",
-			ExpressionAttributeNames: {				
-				"#disponibility": "disponibility"
-				
+			UpdateExpression: "SET   #disponibility = :_disponibility",
+			ExpressionAttributeNames: {
+				"#disponibility": "disponibility",
 			},
 			ExpressionAttributeValues: {
-				
-				":_disponibility": body.disponibility
-				
+				":_disponibility": body.disponibility,
 			},
 			ReturnValues: "UPDATED_NEW",
 		};
@@ -115,7 +113,7 @@ export const updateAvailability = async (id: string, body : {disponibility: bool
 					resolve({
 						statusCode: 200,
 						body: JSON.stringify({
-							data
+							data,
 						}),
 					});
 				}

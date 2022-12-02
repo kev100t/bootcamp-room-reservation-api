@@ -12,6 +12,7 @@ provider:
   environment:
     PRIVATE_KEY: mHlL8LkJK7KmBd45TKl1
     USER_TABLE: ${self:service}-user-${sls:stage}
+    ROOM_TABLE: ${self:service}-room-${sls:stage}
   iam:
     role:
       statements:
@@ -58,22 +59,22 @@ functions:
   #         path: /room
   #         authorizer:
   #           name: authorizerJWT
-  # updateRoom:
-  #   handler: src/lambdas/room.update
-  #   events:
-  #     - http:
-  #         method: PUT
-  #         path: /room/{id}
-  #         authorizer:
-  #           name: authorizerJWT
-  # updateAvailabilityRoom:
-  #   handler: src/lambdas/room.updateAvailability
-  #   events:
-  #     - http:
-  #         method: PATCH
-  #         path: /room/{id}/availability
-  #         authorizer:
-  #           name: authorizerJWT
+  updateRoom:
+    handler: src/lambdas/room.update
+    events:
+      - http:
+          method: PUT
+          path: /room/{id}
+          authorizer:
+            name: authorizerJWT
+  updateAvailabilityRoom:
+    handler: src/lambdas/room.updateAvailability
+    events:
+      - http:
+          method: PATCH
+          path: /room/{id}/availability
+          authorizer:
+            name: authorizerJWT
   # createReservation:
   #   handler: src/lambdas/reservation.create
   #   events:
@@ -108,6 +109,21 @@ resources:
             ProvisionedThroughput:
               ReadCapacityUnits: 1
               WriteCapacityUnits: 1
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+
+    RoomsTable:
+      Type: AWS::DynamoDB::Table
+      DeletionPolicy: Retain
+      Properties:
+        TableName: ${self:provider.environment.ROOM_TABLE}
+        AttributeDefinitions:
+          - AttributeName: _id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: _id
+            KeyType: HASH
         ProvisionedThroughput:
           ReadCapacityUnits: 1
           WriteCapacityUnits: 1
