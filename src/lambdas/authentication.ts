@@ -1,3 +1,4 @@
+import * as jsonwebtoken from "jsonwebtoken";
 import {
 	APIGatewayProxyEvent,
 	APIGatewayProxyResult,
@@ -8,7 +9,6 @@ import {
 	set as setResponse,
 	setError as setErrorResponse,
 } from "../common/response/response";
-import * as jsonwebtoken from "jsonwebtoken";
 
 export const login = async (
 	event: APIGatewayProxyEvent

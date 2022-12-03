@@ -1,35 +1,35 @@
+import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
+import { create as createService } from "../reservation/services";
 import { RoomEntity } from "../common/entities/room";
-import { CustomErrorEntity } from "../common/entities/custom-error";
 import { RoomSearch } from "../common/interfaces/room-search.interface";
 import {
 	set as setResponse,
 	setError as setErrorResponse,
 } from "../common/response/response";
-import { create as createService } from "../reservation/services";
-import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
+import { set as setError } from "../common/error/error";
 
 export const create = async (
 	event: APIGatewayProxyEvent
 ): Promise<APIGatewayProxyResult> => {
 	try {
-		if (!event.body) throw Error("Request body missing");
-		let requestJSON = JSON.parse(event.body);
-		let requestedRoom: RoomEntity = requestJSON.room;
-		let requestedTypes: RoomSearch[] = requestJSON.roomTypes;
-		if (!requestJSON.user)
-			throw { message: "Request user missing" } as CustomErrorEntity;
-		if (!requestedRoom && (!requestedTypes || requestedTypes.length == 0))
-			throw { message: "Request room/room types missing" } as CustomErrorEntity;
+		if (!event.body) throw setError(400, "Request body missing");
 
-		let data = await createService(
+		const requestJSON = JSON.parse(event.body);
+		const requestedRoom: RoomEntity = requestJSON.room;
+		const requestedTypes: RoomSearch[] = requestJSON.roomTypes;
+
+		if (!requestJSON.user) throw setError(400, "Request user missing");
+		if (!requestedRoom && (!requestedTypes || requestedTypes.length == 0))
+			throw setError(400, "Request room/room types missing");
+
+		const data = await createService(
 			requestJSON.user,
 			requestedRoom,
 			requestedTypes
 		);
 
 		return await setResponse(201, data);
-	} catch (err) {
-		console.log(err);
-		return await setErrorResponse(err as CustomErrorEntity);
+	} catch (error) {
+		return await setErrorResponse(error);
 	}
 };

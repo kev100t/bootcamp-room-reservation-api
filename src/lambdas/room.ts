@@ -1,31 +1,32 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
+import { parse as parseFile } from "lambda-multipart-parser";
 import { RoomEntity } from "../common/entities/room";
-import { update as updateRoom } from "../room/services";
-import { updateAvailability as updateAvailabilityRoom } from "../room/services";
+import {
+	updateAvailability as updateAvailabilityRoom,
+	create as createRoom,
+	list as listRoom,
+	update as updateRoom,
+} from "../room/services";
 import {
 	set as setResponse,
 	setError as setErrorResponse,
 } from "../common/response/response";
-import { CustomErrorEntity } from "../common/entities/custom-error";
 
 export const create = async (
 	event: APIGatewayProxyEvent
 ): Promise<APIGatewayProxyResult> => {
 	try {
-		return {
-			statusCode: 200,
-			body: JSON.stringify({
-				message: "Room created",
-			}),
-		};
-	} catch (err) {
-		console.log(err);
-		return {
-			statusCode: 500,
-			body: JSON.stringify({
-				message: "some error happened",
-			}),
-		};
+		const body = await parseFile(event);
+
+		const file = body.files[0];
+
+		await createRoom(file, body);
+
+		return await setResponse(200, {
+			message: "Room created",
+		});
+	} catch (error) {
+		return await setErrorResponse(error);
 	}
 };
 
@@ -33,20 +34,11 @@ export const list = async (
 	event: APIGatewayProxyEvent
 ): Promise<APIGatewayProxyResult> => {
 	try {
-		return {
-			statusCode: 200,
-			body: JSON.stringify({
-				message: "Listed rooms",
-			}),
-		};
-	} catch (err) {
-		console.log(err);
-		return {
-			statusCode: 500,
-			body: JSON.stringify({
-				message: "some error happened",
-			}),
-		};
+		const data = await listRoom();
+
+		return await setResponse(200, data);
+	} catch (error) {
+		return await setErrorResponse(error);
 	}
 };
 
@@ -59,9 +51,8 @@ export const update = async (
 		let requestJSON: RoomEntity = JSON.parse(event.body);
 		let response = await updateRoom(id, requestJSON);
 		return await setResponse(201, response);
-	} catch (err) {
-		console.log(err);
-		return await setErrorResponse(err as CustomErrorEntity);
+	} catch (error) {
+		return await setErrorResponse(error);
 	}
 };
 
@@ -74,8 +65,7 @@ export const updateAvailability = async (
 		let requestJSON: RoomEntity = JSON.parse(event.body);
 		let response = await updateAvailabilityRoom(id, requestJSON);
 		return await setResponse(201, response);
-	} catch (err) {
-		console.log(err);
-		return await setErrorResponse(err as CustomErrorEntity);
+	} catch (error) {
+		return await setErrorResponse(error);
 	}
 };

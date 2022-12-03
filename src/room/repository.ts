@@ -4,18 +4,81 @@ import {
 	DynamoDBClient,
 	ScanCommand,
 	UpdateItemCommand,
+	PutItemCommand,
 } from "@aws-sdk/client-dynamodb";
 import { parseDynamoRecordToObject } from "../util/dynamo.util";
 
 const client = new DynamoDBClient({});
 const TABLE_NAME = process.env.ROOM_TABLE;
 
-export const create = async () => {
-	return "User created";
+export const create = async (room: RoomEntity) => {
+	const params = {
+		TableName: TABLE_NAME,
+		Item: {
+			_id: {
+				S: room.id,
+			},
+			type: {
+				S: room.type,
+			},
+			photo: {
+				S: room.photo,
+			},
+			capacity: {
+				N: `${room.capacity}`,
+			},
+			cost: {
+				N: `${room.cost}`,
+			},
+			disponibility: {
+				BOOL: room.disponibility,
+			},
+			description: {
+				S: room.description,
+			},
+		},
+	};
+
+	console.log(params);
+
+	const commmand = new PutItemCommand(params);
+
+	await client.send(commmand);
+
+	return;
 };
 
 export const list = async () => {
-	return "Listed rooms";
+	const params = {
+		TableName: TABLE_NAME,
+	};
+
+	const command = new ScanCommand(params);
+	const response = await client.send(command);
+
+	const items = response.Items !== undefined ? response.Items : [];
+
+	const rooms = items.map((item) => {
+		const id: string = item._id.S ?? "";
+		const type: string = item.type.S ?? "";
+		const photo: string = item.photo.S ?? "";
+		const capacity: string = item.capacity.N ?? "";
+		const cost: string = item.cost.N ?? "";
+		const disponibility: boolean = item.disponibility.BOOL ?? true;
+		const description: string = item.description.S ?? "";
+
+		return {
+			id,
+			type,
+			photo,
+			capacity: Number(capacity),
+			cost: Number(cost),
+			disponibility,
+			description,
+		};
+	});
+
+	return rooms;
 };
 
 export const update = async (id: string, room: RoomEntity) => {

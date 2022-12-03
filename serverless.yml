@@ -9,11 +9,16 @@ provider:
   runtime: nodejs16.x
   stage: dev
   region: us-east-1
+  lambdaHashingVersion: 20201221
+  apiGateway:
+    binaryMediaTypes:
+      - 'multipart/form-data'
   environment:
     PRIVATE_KEY: mHlL8LkJK7KmBd45TKl1
     USER_TABLE: ${self:service}-user-${sls:stage}
     ROOM_TABLE: ${self:service}-room-${sls:stage}
     RESERVATION_TABLE: ${self:service}-reservation-${sls:stage}
+    ROOM_BUCKET: ${self:service}-room-bucket-${sls:stage}
   iam:
     role:
       statements:
@@ -25,6 +30,8 @@ provider:
             - dynamodb:PutItem
             - dynamodb:UpdateItem
             - dynamodb:DeleteItem
+            - s3:PutObject
+            - s3:PutObjectAcl
           Resource: "*"
 
 functions:
@@ -44,22 +51,23 @@ functions:
           method: POST
           path: /user
           cors: true
-  # createRoom:
-  #   handler: src/lambdas/room.create
-  #   events:
-  #     - http:
-  #         method: POST
-  #         path: /room
-  #         authorizer:
-  #           name: authorizerJWT
-  # listRoom:
-  #   handler: src/lambdas/room.list
-  #   events:
-  #     - http:
-  #         method: GET
-  #         path: /room
-  #         authorizer:
-  #           name: authorizerJWT
+  createRoom:
+    handler: src/lambdas/room.create
+    events:
+      - http:
+          method: POST
+          path: /room
+          cors: true
+          authorizer:
+            name: authorizerJWT
+  listRoom:
+    handler: src/lambdas/room.list
+    events:
+      - http:
+          method: GET
+          path: /room
+          authorizer:
+            name: authorizerJWT
   updateRoom:
     handler: src/lambdas/room.update
     events:
@@ -90,6 +98,12 @@ functions:
 
 resources:
   Resources:
+    RoomsBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:provider.environment.ROOM_BUCKET}
+        AccessControl: PublicRead
+
     UsersTable:
       Type: AWS::DynamoDB::Table
       DeletionPolicy: Retain
