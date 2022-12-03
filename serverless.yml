@@ -66,6 +66,7 @@ functions:
       - http:
           method: GET
           path: /room
+          cors: true
           authorizer:
             name: authorizerJWT
   updateRoom:

@@ -3,7 +3,7 @@ import { UserEntity } from "./user";
 
 export interface ReservationEntity {
 	id: string;
-	user: UserEntity;
+	userId: string;
 	rooms: RoomEntity[];
 	date: Date | string;
 }

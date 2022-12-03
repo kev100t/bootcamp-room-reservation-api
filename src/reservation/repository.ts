@@ -3,50 +3,47 @@ import { ulid } from "ulid";
 import { CustomErrorEntity } from "../common/entities/custom-error";
 import { ReservationEntity } from "../common/entities/reservation";
 import { RoomEntity } from "../common/entities/room";
-import { UserEntity } from "../common/entities/user";
 import { parseObjectToDynamoRecord } from "../util/dynamo.util";
 
 const client = new DynamoDBClient({});
 const TABLE_NAME = process.env.RESERVATION_TABLE;
 
-export const create = async (user: UserEntity, reservedRooms: RoomEntity[]) => {
-	let roomIds = reservedRooms.map((room) => {
+export const create = async (userId: string, reservedRooms: RoomEntity[]) => {
+	const roomIds = reservedRooms.map((room) => {
 		return { _id: room._id } as RoomEntity;
 	});
-	let reservation: ReservationEntity = {
+
+	const reservation: ReservationEntity = {
 		date: new Date().toTimeString(),
 		id: ulid(),
 		rooms: roomIds,
-		user: { id: user.id } as UserEntity,
+		userId,
 	};
-	let reservationDbd = parseObjectToDynamoRecord(reservation);
-	try {
-		let response = await client.send(
-			new UpdateItemCommand({
-				ConditionExpression: "attribute_not_exists(id)",
-				TableName: TABLE_NAME,
-				Key: {
-					id: { S: ulid() },
-				},
-				UpdateExpression:
-					"SET  #date = :_date, #rooms = :_rooms, #user = :_user",
-				ExpressionAttributeNames: {
-					"#date": "date",
-					"#rooms": "rooms",
-					"#user": "user",
-				},
-				ExpressionAttributeValues: {
-					":_date": reservationDbd.date,
-					":_rooms": reservationDbd.rooms,
-					":_user": reservationDbd.user,
-				},
-				ReturnValues: "UPDATED_NEW",
-			})
-		);
-		return response;
-	} catch (err) {
-		throw {
-			message: `Reservation registry failed: ${err.message}`,
-		} as CustomErrorEntity;
-	}
+
+	const reservationDbd = parseObjectToDynamoRecord(reservation);
+
+	await client.send(
+		new UpdateItemCommand({
+			ConditionExpression: "attribute_not_exists(id)",
+			TableName: TABLE_NAME,
+			Key: {
+				id: { S: ulid() },
+			},
+			UpdateExpression:
+				"SET  #date = :_date, #rooms = :_rooms, #userId = :_userId",
+			ExpressionAttributeNames: {
+				"#date": "date",
+				"#rooms": "rooms",
+				"#userId": "userId",
+			},
+			ExpressionAttributeValues: {
+				":_date": reservationDbd.date,
+				":_rooms": reservationDbd.rooms,
+				":_userId": reservationDbd.userId,
+			},
+			ReturnValues: "UPDATED_NEW",
+		})
+	);
+
+	return;
 };

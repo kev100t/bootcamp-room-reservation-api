@@ -39,7 +39,13 @@ export const checkAuthentication = async (
 			process.env.PRIVATE_KEY
 		);
 
-		console.log(requestContext, role);
+		console.log(role);
+		console.log(requestContext.httpMethod);
+		console.log(requestContext.resourcePath);
+
+		const context = {
+			userId,
+		};
 
 		if (role == "REGULAR") {
 			if (
@@ -55,10 +61,6 @@ export const checkAuthentication = async (
 				return await generateAuthResponse("userId", "Deny", methodArn, null);
 			}
 		}
-
-		const context = {
-			userId,
-		};
 
 		return await generateAuthResponse(userId, "Allow", methodArn, context);
 	} catch (error) {
