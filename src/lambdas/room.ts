@@ -50,13 +50,19 @@ export const update = async (
 	try {
 		const id = event.pathParameters.id;
 		const body = event.body;
-		return await updateRoom(id, body);
+		let responce = await updateRoom(id, body);
+		return {statusCode: 200,
+					 	body: JSON.stringify({
+							responce,
+						}
+			)}
+
 	} catch (err) {
 		console.log(err);
 		return {
 			statusCode: 500,
 			body: JSON.stringify({
-				message: "some error happened",
+				message: "Error al actualizar Habitacion",
 			}),
 		};
 	}
@@ -68,13 +74,19 @@ export const updateAvailability = async (
 	try {
 		const id = event.pathParameters.id;
 		const body = event.body;
-		return await updateAvailabilityRoom(id, body);
+		let responce = await updateAvailabilityRoom(id, body);
+		return {statusCode: 200,
+			body: JSON.stringify({
+			   responce,
+		   }
+		)}
+		
 	} catch (err) {
 		console.log(err);
 		return {
 			statusCode: 500,
 			body: JSON.stringify({
-				message: "some error happened",
+				message: "Error al actualizar disponibilidad",
 			}),
 		};
 	}

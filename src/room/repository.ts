@@ -45,37 +45,27 @@ export const update = async (id: string, obj: any) => {
 			},
 			ReturnValues: "UPDATED_NEW",
 		};
-		console.log("params", params);
+		// console.log("params", params);
 
 		return new Promise((resolve) =>
 			dynamodb.update(params, (err: any, data: any) => {
 				if (err) {
-					console.error("No actualizó correctamente", err);
-					resolve({
-						statusCode: 500,
-						body: JSON.stringify({
-							message: err,
-						}),
-					});
+					// console.error("No actualizó correctamente", err);
+					throw err;
 				} else {
-					console.log("Actualizó correctamente", data);
-					resolve({
-						statusCode: 200,
-						body: JSON.stringify({
-							data,
-						}),
-					});
+					return data;
+					// console.log("Actualizó correctamente", data);
+					// resolve({
+					// 	statusCode: 200,
+					// 	body: JSON.stringify({
+					// 		data,
+					// 	}),
+					// });
 				}
 			})
 		);
 	} catch (error) {
-		console.log("error catch", error);
-		return {
-			statusCode: 500,
-			body: JSON.stringify({
-				message: "Error al actualizar habitacion",
-			}),
-		};
+		throw error;
 	}
 };
 
@@ -102,37 +92,33 @@ export const updateAvailability = async (
 			},
 			ReturnValues: "UPDATED_NEW",
 		};
-		console.log("params", params);
+		// console.log("params", params);
 
 		return new Promise((resolve) =>
 			dynamodb.update(params, (err: any, data: any) => {
 				if (err) {
-					console.error("No actualizó correctamente", err);
-					resolve({
-						statusCode: 500,
-						body: JSON.stringify({
-							message: err,
-						}),
-					});
+					throw err;
+					// console.error("No actualizó correctamente", err);
+					// resolve({
+					// 	statusCode: 500,
+					// 	body: JSON.stringify({
+					// 		message: err,
+					// 	}),
+					// });
 				} else {
-					console.log("Actualizó correctamente", data);
-					resolve({
-						statusCode: 200,
-						body: JSON.stringify({
-							data,
-						}),
-					});
+					return data;
+					// console.log("Actualizó correctamente", data);
+					// resolve({
+					// 	statusCode: 200,
+					// 	body: JSON.stringify({
+					// 		data,
+					// 	}),
+					// });
 				}
 			})
 		);
 	} catch (error) {
-		console.log("error catch", error);
-		return {
-			statusCode: 500,
-			body: JSON.stringify({
-				message: "Error al actualizar habitacion",
-			}),
-		};
+		throw error;
 	}
 };
 
