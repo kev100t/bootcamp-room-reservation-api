@@ -15,7 +15,7 @@ export const create = async (room: RoomEntity) => {
 	const params = {
 		TableName: TABLE_NAME,
 		Item: {
-			_id: {
+			id: {
 				S: room.id,
 			},
 			type: {
@@ -59,7 +59,7 @@ export const list = async () => {
 	const items = response.Items !== undefined ? response.Items : [];
 
 	const rooms = items.map((item) => {
-		const id: string = item._id.S ?? "";
+		const id: string = item.id.S ?? "";
 		const type: string = item.type.S ?? "";
 		const photo: string = item.photo.S ?? "";
 		const capacity: string = item.capacity.N ?? "";
@@ -85,10 +85,9 @@ export const update = async (id: string, room: RoomEntity) => {
 	try {
 		let response = await client.send(
 			new UpdateItemCommand({
-				// ConditionExpression: "attribute_exists(_id)",
 				TableName: TABLE_NAME,
 				Key: {
-					_id: { S: id },
+					id: { S: id },
 				},
 				UpdateExpression:
 					"SET  #capacity = :_capacity, #cost = :_cost, #description = :_description, #disponibility = :_disponibility, #photo = :_photo, #type = :_type",
@@ -121,10 +120,9 @@ export const updateAvailability = async (id: string, room: RoomEntity) => {
 	try {
 		let response = await client.send(
 			new UpdateItemCommand({
-				// ConditionExpression: "attribute_exists(_id)",
 				TableName: TABLE_NAME,
 				Key: {
-					_id: { S: id },
+					id: { S: id },
 				},
 				UpdateExpression: "SET  #disponibility = :_disponibility",
 				ExpressionAttributeNames: {
@@ -174,14 +172,14 @@ export const findById = async (roomId: string): Promise<RoomEntity> => {
 	let responseDdb = await client.send(
 		new ScanCommand({
 			TableName: TABLE_NAME,
-			FilterExpression: "#disponibility = :disponibility AND #_id = :_id",
+			FilterExpression: "#disponibility = :disponibility AND #id = :id",
 			ExpressionAttributeNames: {
 				"#disponibility": "disponibility",
-				"#_id": "_id",
+				"#id": "id",
 			},
 			ExpressionAttributeValues: {
 				":disponibility": { BOOL: true },
-				":_id": { S: roomId },
+				":id": { S: roomId },
 			},
 		})
 	);

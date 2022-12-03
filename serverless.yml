@@ -165,10 +165,10 @@ resources:
       Properties:
         TableName: ${self:provider.environment.ROOM_TABLE}
         AttributeDefinitions:
-          - AttributeName: _id
+          - AttributeName: id
             AttributeType: S
         KeySchema:
-          - AttributeName: _id
+          - AttributeName: id
             KeyType: HASH
         ProvisionedThroughput:
           ReadCapacityUnits: 1

@@ -29,7 +29,7 @@ export const create = async (
 		await createRepository(userId, reservedRooms);
 
 		for await (const reservedRoom of reservedRooms) {
-			await updateRoomRepository(reservedRoom._id, {
+			await updateRoomRepository(reservedRoom.id, {
 				disponibility: false,
 			} as RoomEntity);
 		}

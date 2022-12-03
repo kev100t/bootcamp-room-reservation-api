@@ -1,4 +1,4 @@
-import { v4 as uuidv4 } from "uuid";
+import { ulid } from "ulid";
 import { save as saveFile } from "../common/files/file";
 import { RoomEntity } from "../common/entities/room";
 import {
@@ -12,7 +12,7 @@ export const create = async (file, body: any) => {
 	const url = await saveFile(file.fieldname, file.contentType, file.content);
 
 	const room: RoomEntity = {
-		id: uuidv4(),
+		id: ulid(),
 		type: body.type,
 		photo: url,
 		capacity: body.capacity,
@@ -33,7 +33,7 @@ export const list = async () => {
 export const update = async (id: string, room: RoomEntity) => {
 	try {
 		if (
-			!room._id ||
+			!room.id ||
 			!room.capacity ||
 			!room.cost ||
 			!room.description ||

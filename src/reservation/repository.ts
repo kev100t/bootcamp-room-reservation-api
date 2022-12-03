@@ -1,6 +1,5 @@
 import { DynamoDBClient, UpdateItemCommand } from "@aws-sdk/client-dynamodb";
 import { ulid } from "ulid";
-import { CustomErrorEntity } from "../common/entities/custom-error";
 import { ReservationEntity } from "../common/entities/reservation";
 import { RoomEntity } from "../common/entities/room";
 import { parseObjectToDynamoRecord } from "../util/dynamo.util";
@@ -10,7 +9,7 @@ const TABLE_NAME = process.env.RESERVATION_TABLE;
 
 export const create = async (userId: string, reservedRooms: RoomEntity[]) => {
 	const roomIds = reservedRooms.map((room) => {
-		return { _id: room._id } as RoomEntity;
+		return { id: room.id } as RoomEntity;
 	});
 
 	const reservation: ReservationEntity = {
