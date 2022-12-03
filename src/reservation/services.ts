@@ -5,7 +5,9 @@ import { create as createRepository } from "./repository";
 import {
 	updateAvailability as updateRoomRepository,
 	findByType as findByTypeRepository,
+	findById as findByIdRepository,
 } from "../room/repository";
+import { CustomErrorEntity } from "../common/entities/custom-error";
 
 export const create = async (
 	user: UserEntity,
@@ -13,14 +15,19 @@ export const create = async (
 	roomTypes?: RoomSearch[]
 ) => {
 	try {
-		let reservedRooms: RoomEntity[];
-		if (room) reservedRooms = [room];
-		else if (roomTypes) reservedRooms = await findByTypeRepository(roomTypes);
-		else throw Error("Bad Request");
+		let reservedRooms: RoomEntity[] = [];
+		if (room) reservedRooms = [await findByIdRepository(room._id)];
+		else if (roomTypes) {
+			for await (const roomType of roomTypes) {
+				reservedRooms = reservedRooms.concat(
+					await findByTypeRepository(roomType)
+				);
+			}
+		} else throw { message: "Request parameters missing" } as CustomErrorEntity;
 		const reservation = await createRepository(user, reservedRooms);
-		reservedRooms.forEach((room) =>
-			updateRoomRepository(room.id, { disponibility: false })
-		);
+		for await (const reservedRoom of reservedRooms) {
+			await updateRoomRepository(reservedRoom._id, { disponibility: false });
+		}
 		return reservation;
 	} catch (err) {
 		throw err;

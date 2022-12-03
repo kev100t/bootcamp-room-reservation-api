@@ -16,8 +16,10 @@ export const create = async (
 		let requestJSON = JSON.parse(event.body);
 		let requestedRoom: RoomEntity = requestJSON.room;
 		let requestedTypes: RoomSearch[] = requestJSON.roomTypes;
-		if (!requestedRoom || !requestedTypes || requestedTypes.length == 0)
-			throw Error("Request room/room types missing");
+		if (!requestJSON.user)
+			throw { message: "Request user missing" } as CustomErrorEntity;
+		if (!requestedRoom && (!requestedTypes || requestedTypes.length == 0))
+			throw { message: "Request room/room types missing" } as CustomErrorEntity;
 
 		let data = await createService(
 			requestJSON.user,
@@ -25,7 +27,7 @@ export const create = async (
 			requestedTypes
 		);
 
-		return await setResponse(201, data);
+		return await setResponse(201, JSON.stringify(data));
 	} catch (err: any) {
 		console.log(err);
 		return await setErrorResponse(err as CustomErrorEntity);
