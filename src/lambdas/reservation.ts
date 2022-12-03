@@ -27,8 +27,8 @@ export const create = async (
 			requestedTypes
 		);
 
-		return await setResponse(201, JSON.stringify(data));
-	} catch (err: any) {
+		return await setResponse(201, data);
+	} catch (err) {
 		console.log(err);
 		return await setErrorResponse(err as CustomErrorEntity);
 	}

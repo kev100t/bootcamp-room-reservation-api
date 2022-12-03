@@ -1,6 +1,10 @@
 import { RoomEntity } from "../common/entities/room";
 import { RoomSearch } from "../common/interfaces/room-search.interface";
-import { DynamoDBClient, ScanCommand } from "@aws-sdk/client-dynamodb";
+import {
+	DynamoDBClient,
+	ScanCommand,
+	UpdateItemCommand,
+} from "@aws-sdk/client-dynamodb";
 import { parseDynamoRecordToObject } from "../util/dynamo.util";
 
 const client = new DynamoDBClient({});
@@ -14,109 +18,62 @@ export const list = async () => {
 	return "Listed rooms";
 };
 
-export const update = async (id: string, obj: any) => {
+export const update = async (id: string, room: RoomEntity) => {
 	try {
-		const AWS = require("aws-sdk");
-
-		const dynamodb = new AWS.DynamoDB.DocumentClient();
-
-		const params = {
-			TableName: process.env.ROOM_TABLE,
-			Key: {
-				_id: id,
-			},
-			UpdateExpression:
-				"SET  #capacity = :_capacity, #cost = :_cost, #description = :_description, #disponibility = :_disponibility, #photo = :_photo, #type = :_type",
-			ExpressionAttributeNames: {
-				"#capacity": "capacity",
-				"#cost": "cost",
-				"#description": "description",
-				"#disponibility": "disponibility",
-				"#photo": "photo",
-				"#type": "type",
-			},
-			ExpressionAttributeValues: {
-				":_capacity": obj.capacity,
-				":_cost": obj.cost,
-				":_description": obj.description,
-				":_disponibility": obj.disponibility,
-				":_photo": obj.photo,
-				":_type": obj.type,
-			},
-			ReturnValues: "UPDATED_NEW",
-		};
-		// console.log("params", params);
-
-		return new Promise((resolve) =>
-			dynamodb.update(params, (err: any, data: any) => {
-				if (err) {
-					// console.error("No actualizó correctamente", err);
-					throw err;
-				} else {
-					return data;
-					// console.log("Actualizó correctamente", data);
-					// resolve({
-					// 	statusCode: 200,
-					// 	body: JSON.stringify({
-					// 		data,
-					// 	}),
-					// });
-				}
+		let response = await client.send(
+			new UpdateItemCommand({
+				// ConditionExpression: "attribute_exists(_id)",
+				TableName: TABLE_NAME,
+				Key: {
+					_id: { S: id },
+				},
+				UpdateExpression:
+					"SET  #capacity = :_capacity, #cost = :_cost, #description = :_description, #disponibility = :_disponibility, #photo = :_photo, #type = :_type",
+				ExpressionAttributeNames: {
+					"#capacity": "capacity",
+					"#cost": "cost",
+					"#description": "description",
+					"#disponibility": "disponibility",
+					"#photo": "photo",
+					"#type": "type",
+				},
+				ExpressionAttributeValues: {
+					":_capacity": { N: room.capacity.toString() },
+					":_cost": { N: room.cost.toString() },
+					":_description": { S: room.description },
+					":_disponibility": { BOOL: room.disponibility },
+					":_photo": { S: room.photo },
+					":_type": { S: room.type },
+				},
+				ReturnValues: "UPDATED_NEW",
 			})
 		);
+		return response;
 	} catch (error) {
 		throw error;
 	}
 };
 
-export const updateAvailability = async (
-	id: string,
-	body: { disponibility: boolean }
-) => {
+export const updateAvailability = async (id: string, room: RoomEntity) => {
 	try {
-		const AWS = require("aws-sdk");
-
-		const dynamodb = new AWS.DynamoDB.DocumentClient();
-
-		const params = {
-			TableName: process.env.ROOM_TABLE,
-			Key: {
-				_id: id,
-			},
-			UpdateExpression: "SET   #disponibility = :_disponibility",
-			ExpressionAttributeNames: {
-				"#disponibility": "disponibility",
-			},
-			ExpressionAttributeValues: {
-				":_disponibility": body.disponibility,
-			},
-			ReturnValues: "UPDATED_NEW",
-		};
-		// console.log("params", params);
-
-		return new Promise((resolve) =>
-			dynamodb.update(params, (err: any, data: any) => {
-				if (err) {
-					throw err;
-					// console.error("No actualizó correctamente", err);
-					// resolve({
-					// 	statusCode: 500,
-					// 	body: JSON.stringify({
-					// 		message: err,
-					// 	}),
-					// });
-				} else {
-					return data;
-					// console.log("Actualizó correctamente", data);
-					// resolve({
-					// 	statusCode: 200,
-					// 	body: JSON.stringify({
-					// 		data,
-					// 	}),
-					// });
-				}
+		let response = await client.send(
+			new UpdateItemCommand({
+				// ConditionExpression: "attribute_exists(_id)",
+				TableName: TABLE_NAME,
+				Key: {
+					_id: { S: id },
+				},
+				UpdateExpression: "SET  #disponibility = :_disponibility",
+				ExpressionAttributeNames: {
+					"#disponibility": "disponibility",
+				},
+				ExpressionAttributeValues: {
+					":_disponibility": { BOOL: room.disponibility },
+				},
+				ReturnValues: "UPDATED_NEW",
 			})
 		);
+		return response;
 	} catch (error) {
 		throw error;
 	}
@@ -142,13 +99,10 @@ export const findByType = async (
 	if (!responseDdb.Items || responseDdb.Items.length < roomType.count)
 		throw Error(`Not enough available rooms for type: ${roomType.type}`);
 
-	console.log("responseDdb.Items\n", responseDdb.Items);
 	let selectedRooms = responseDdb.Items.slice(0, roomType.count);
-	console.log("selectedRooms\n", selectedRooms);
 	let parsedRooms: RoomEntity[] = parseDynamoRecordToObject(
 		selectedRooms
 	) as RoomEntity[];
-	console.log("parsedRooms\n", parsedRooms);
 	return parsedRooms;
 };
 
@@ -171,6 +125,5 @@ export const findById = async (roomId: string): Promise<RoomEntity> => {
 	if (!responseDdb.Items || responseDdb.Items.length == 0)
 		throw Error("Room is not available.");
 	availableRoom = parseDynamoRecordToObject(responseDdb.Items)[0] as RoomEntity;
-	console.log("availableRoom\n", availableRoom);
 	return availableRoom;
 };

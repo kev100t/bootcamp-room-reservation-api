@@ -26,7 +26,9 @@ export const create = async (
 		} else throw { message: "Request parameters missing" } as CustomErrorEntity;
 		const reservation = await createRepository(user, reservedRooms);
 		for await (const reservedRoom of reservedRooms) {
-			await updateRoomRepository(reservedRoom._id, { disponibility: false });
+			await updateRoomRepository(reservedRoom._id, {
+				disponibility: false,
+			} as RoomEntity);
 		}
 		return reservation;
 	} catch (err) {

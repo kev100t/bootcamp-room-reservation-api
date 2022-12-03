@@ -1,6 +1,12 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
+import { RoomEntity } from "../common/entities/room";
 import { update as updateRoom } from "../room/services";
 import { updateAvailability as updateAvailabilityRoom } from "../room/services";
+import {
+	set as setResponse,
+	setError as setErrorResponse,
+} from "../common/response/response";
+import { CustomErrorEntity } from "../common/entities/custom-error";
 
 export const create = async (
 	event: APIGatewayProxyEvent
@@ -49,22 +55,13 @@ export const update = async (
 ): Promise<APIGatewayProxyResult> => {
 	try {
 		const id = event.pathParameters.id;
-		const body = event.body;
-		let responce = await updateRoom(id, body);
-		return {statusCode: 200,
-					 	body: JSON.stringify({
-							responce,
-						}
-			)}
-
+		if (!event.body) throw Error("Request body missing");
+		let requestJSON: RoomEntity = JSON.parse(event.body);
+		let response = await updateRoom(id, requestJSON);
+		return await setResponse(201, response);
 	} catch (err) {
 		console.log(err);
-		return {
-			statusCode: 500,
-			body: JSON.stringify({
-				message: "Error al actualizar Habitacion",
-			}),
-		};
+		return await setErrorResponse(err as CustomErrorEntity);
 	}
 };
 
@@ -73,21 +70,12 @@ export const updateAvailability = async (
 ): Promise<APIGatewayProxyResult> => {
 	try {
 		const id = event.pathParameters.id;
-		const body = event.body;
-		let responce = await updateAvailabilityRoom(id, body);
-		return {statusCode: 200,
-			body: JSON.stringify({
-			   responce,
-		   }
-		)}
-		
+		if (!event.body) throw Error("Request body missing");
+		let requestJSON: RoomEntity = JSON.parse(event.body);
+		let response = await updateAvailabilityRoom(id, requestJSON);
+		return await setResponse(201, response);
 	} catch (err) {
 		console.log(err);
-		return {
-			statusCode: 500,
-			body: JSON.stringify({
-				message: "Error al actualizar disponibilidad",
-			}),
-		};
+		return await setErrorResponse(err as CustomErrorEntity);
 	}
 };

@@ -1,4 +1,4 @@
-import { DynamoDBClient, PutItemCommand } from "@aws-sdk/client-dynamodb";
+import { DynamoDBClient, UpdateItemCommand } from "@aws-sdk/client-dynamodb";
 import { ulid } from "ulid";
 import { CustomErrorEntity } from "../common/entities/custom-error";
 import { ReservationEntity } from "../common/entities/reservation";
@@ -19,16 +19,34 @@ export const create = async (user: UserEntity, reservedRooms: RoomEntity[]) => {
 		rooms: roomIds,
 		user: { id: user.id } as UserEntity,
 	};
+	let reservationDbd = parseObjectToDynamoRecord(reservation);
 	try {
 		let response = await client.send(
-			new PutItemCommand({
+			new UpdateItemCommand({
 				ConditionExpression: "attribute_not_exists(id)",
 				TableName: TABLE_NAME,
-				Item: parseObjectToDynamoRecord(reservation),
+				Key: {
+					id: { S: ulid() },
+				},
+				UpdateExpression:
+					"SET  #date = :_date, #rooms = :_rooms, #user = :_user",
+				ExpressionAttributeNames: {
+					"#date": "date",
+					"#rooms": "rooms",
+					"#user": "user",
+				},
+				ExpressionAttributeValues: {
+					":_date": reservationDbd.date,
+					":_rooms": reservationDbd.rooms,
+					":_user": reservationDbd.user,
+				},
+				ReturnValues: "UPDATED_NEW",
 			})
 		);
-		return { response, reservation };
+		return response;
 	} catch (err) {
-		throw { message: "Reservation registry failed." } as CustomErrorEntity;
+		throw {
+			message: `Reservation registry failed: ${err.message}`,
+		} as CustomErrorEntity;
 	}
 };
